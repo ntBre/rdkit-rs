@@ -1,0 +1,9 @@
+[package]
+name = "rdkit-rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bitflags = "2.4.1"
+log = "0.4.20"
+rdkit-sys = { path = "../rdkit-sys" }
