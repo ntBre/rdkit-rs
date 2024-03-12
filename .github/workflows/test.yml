@@ -46,6 +46,9 @@ jobs:
           make
       - name: set RDROOT
         run: |
+          pwd
+          ls
+          ls rdkit
           echo "RDROOT=\"$(realpath rdkit)\"" >> "$GITHUB_ENV"
       - name: cargo generate-lockfile
         if: hashFiles('Cargo.lock') == ''
