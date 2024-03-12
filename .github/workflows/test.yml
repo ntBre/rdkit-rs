@@ -47,8 +47,19 @@ jobs:
       - name: set RDROOT
         run: |
           pwd
+          echo "==="
           ls
+          echo "==="
           ls rdkit
+          echo "==="
+          ls rdkit/build
+          echo "==="
+          ls rdkit/build/lib
+          echo "==="
+          realpath rdkit
+          echo "==="
+          realpath rdkit/build/lib
+          echo "==="
           echo "RDROOT=\"$(realpath rdkit)\"" >> "$GITHUB_ENV"
       - name: cargo generate-lockfile
         if: hashFiles('Cargo.lock') == ''
