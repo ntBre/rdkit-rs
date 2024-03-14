@@ -195,6 +195,17 @@ pub mod bitvector {
     }
 }
 
+pub struct SmilesParserParams {
+    /// defaults to true
+    pub remove_hs: bool,
+}
+
+impl Default for SmilesParserParams {
+    fn default() -> Self {
+        Self { remove_hs: true }
+    }
+}
+
 pub struct ROMol(*mut RDKit_ROMol);
 
 impl Display for ROMol {
@@ -205,8 +216,12 @@ impl Display for ROMol {
 
 impl ROMol {
     pub fn from_smiles(smiles: &str) -> Self {
+        Self::from_smiles_full(smiles, SmilesParserParams { remove_hs: true })
+    }
+
+    pub fn from_smiles_full(smiles: &str, params: SmilesParserParams) -> Self {
         let s = CString::new(smiles).expect("failed to create CString");
-        unsafe { Self(RDKit_SmilesToMol(s.as_ptr())) }
+        unsafe { Self(RDKit_SmilesToMol(s.as_ptr(), params.remove_hs)) }
     }
 
     pub fn from_smarts(smarts: &str) -> Self {
