@@ -90,14 +90,14 @@ jobs:
           mkdir build
           cd build
           cmake -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_BUILD_PYTHON_WRAPPERS=OFF ..
-          make
+          make -j
       - name: copy over rdkit
         run: |
-          mkdir -p /opt
-          cp -r rdkit /opt/.
+          sudo mkdir -p /opt
+          sudo cp -r rdkit /opt/.
       - name: cargo generate-lockfile
         if: hashFiles('Cargo.lock') == ''
         run: cargo generate-lockfile
       # https://twitter.com/jonhoo/status/1571290371124260865
       - name: cargo test --locked
-        run: RDROOT=/opt/rdkit cargo test --locked --all-features --all-targets
+        run: CXX=clang++ RDROOT=/opt/rdkit cargo test --locked --all-features --all-targets
