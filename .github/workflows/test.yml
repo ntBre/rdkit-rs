@@ -9,7 +9,7 @@ defaults:
   run:
     shell: bash -leo pipefail {0} {0}
 jobs:
-  required:
+  linux:
     runs-on: ubuntu-latest
     name: ubuntu / ${{ matrix.toolchain }}
     strategy:
@@ -26,6 +26,53 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt install libboost-all-dev libeigen3-dev python3-numpy
+      - name: cache rdkit
+        id: cache-rdkit
+        uses: actions/cache@v4
+        with:
+          path: |
+            rdkit/build/lib
+            rdkit/Code
+            rdkit/External
+          key: ${{ runner.os }}-build-rdkit
+      - name: install rdkit
+        if: steps.cache-rdkit.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 https://github.com/rdkit/rdkit
+          cd rdkit
+          mkdir build
+          cd build
+          cmake -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_BUILD_PYTHON_WRAPPERS=OFF ..
+          make
+      - name: copy over rdkit
+        run: |
+          mkdir -p /opt
+          cp -r rdkit /opt/.
+      - name: cargo generate-lockfile
+        if: hashFiles('Cargo.lock') == ''
+        run: cargo generate-lockfile
+      # https://twitter.com/jonhoo/status/1571290371124260865
+      - name: cargo test --locked
+        run: RDROOT=/opt/rdkit cargo test --locked --all-features --all-targets
+
+  mac:
+    runs-on: macos-latest
+    name: macos / ${{ matrix.target }}
+    strategy:
+      matrix:
+        target: [x86_64, aarch64]
+        toolchain: [nightly]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Install ${{ matrix.toolchain }}
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - name: install dependencies
+        run: |
+          brew install boost eigen numpy
       - name: cache rdkit
         id: cache-rdkit
         uses: actions/cache@v4
