@@ -57,10 +57,9 @@ jobs:
 
   mac:
     runs-on: macos-latest
-    name: macos / ${{ matrix.target }}
+    name: macos
     strategy:
       matrix:
-        target: [x86_64, aarch64]
         toolchain: [nightly]
     steps:
       - uses: actions/checkout@v4
@@ -100,4 +99,4 @@ jobs:
         run: cargo generate-lockfile
       # https://twitter.com/jonhoo/status/1571290371124260865
       - name: cargo test --locked
-        run: CXX=clang++ RDROOT=/opt/rdkit cargo test --locked --all-features --all-targets
+        run: CXX='clang++ -v' RDROOT=/opt/rdkit cargo test --locked --all-features --all-targets
