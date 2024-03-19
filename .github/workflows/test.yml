@@ -89,7 +89,7 @@ jobs:
           cd rdkit
           mkdir build
           cd build
-          cmake -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_BUILD_PYTHON_WRAPPERS=OFF ..
+          cmake -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_BUILD_PYTHON_WRAPPERS=OFF -DRDK_BUILD_CPP_TESTS=OFF ..
           make -j
       - name: copy over rdkit
         run: |
