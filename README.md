@@ -64,9 +64,10 @@ RDROOT = "/home/brent/omsf/clone/rdkit"
 
 Here I have used my actual path, but be sure to replace it with your own.
 
-Place this code in `src/main.rs`:
+Update `src/main.rs`:
 
-``` rust
+``` shell
+cat > src/main.rs <<INP
 use rdkit_rs::ROMol;
 
 fn main() {
@@ -74,6 +75,7 @@ fn main() {
     let inchi = mol.to_inchi_key();
     println!("Hello inchi: {inchi}!")
 }
+INP
 ```
 
 Run with cargo:
