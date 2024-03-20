@@ -84,4 +84,23 @@ Run with cargo:
 cargo run
 ```
 
+### Using Docker
+
+You can use the included `Dockerfile` to build a base Arch Linux image with
+RDKit and Rust:
+
+``` shell
+docker build -t rdkit-rs - < Dockerfile
+```
+
+Then you can run the image
+
+``` shell
+docker run -it rdkit-rs bash
+```
+
+And follow the rest of the steps in the example above. The Dockerfile copies
+RDKit to `/opt/rdkit`, so you can use `RDROOT=/opt/rdkit` in your
+`.cargo/config.toml` or at the command line.
+
 [rdkit]: https://github.com/rdkit/rdkit
