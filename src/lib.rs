@@ -20,6 +20,7 @@ pub mod errors;
 pub mod fingerprint;
 pub mod fragment;
 pub mod mol_supplier;
+pub mod rust_mol;
 
 pub use errors::RDError;
 pub use mol_supplier::SDMolSupplier;

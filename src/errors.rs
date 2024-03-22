@@ -10,3 +10,9 @@ impl Display for RDError {
 }
 
 impl std::error::Error for RDError {}
+
+impl From<serde_json::Error> for RDError {
+    fn from(_: serde_json::Error) -> Self {
+        Self
+    }
+}
