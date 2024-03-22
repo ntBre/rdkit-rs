@@ -63,7 +63,7 @@ jobs:
       volumes:
         - rdkit-rs:/source
       env:
-        - RDROOT: /opt/rdkit
+        RDROOT: /opt/rdkit
     steps:
       - uses: actions/checkout@v4
         with:
