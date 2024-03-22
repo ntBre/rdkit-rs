@@ -6,10 +6,10 @@ use std::{
 
 use bitflags::bitflags;
 use rdkit_sys::{
-    RDKit_MolToSmiles, RDKit_ROMol, RDKit_ROMol_delete, RDKit_SDMolSupplier,
-    RDKit_SmartsToMol, RDKit_SmilesToMol, RDKit_create_mol_supplier,
-    RDKit_delete_mol_supplier, RDKit_mol_supplier_at_end,
-    RDKit_mol_supplier_next,
+    RDKit_JSONToMol, RDKit_MolToJSON, RDKit_MolToSmiles, RDKit_ROMol,
+    RDKit_ROMol_delete, RDKit_SDMolSupplier, RDKit_SmartsToMol,
+    RDKit_SmilesToMol, RDKit_create_mol_supplier, RDKit_delete_mol_supplier,
+    RDKit_mol_supplier_at_end, RDKit_mol_supplier_next,
 };
 
 use self::bitvector::BitVector;
@@ -238,6 +238,23 @@ impl ROMol {
     pub fn from_smarts(smarts: &str) -> Self {
         let s = CString::new(smarts).expect("failed to create CString");
         unsafe { Self(RDKit_SmartsToMol(s.as_ptr())) }
+    }
+
+    /// Create an [ROMol] from a JSON string. The format can be either
+    /// [CommonChem](https://github.com/CommonChem/CommonChem), or the RDKit
+    /// [extension](http://rdkit.org/docs/source/rdkit.Chem.rdMolInterchange.html).
+    pub fn from_json(json: &str) -> Self {
+        let s = CString::new(json).expect("failed to create CString");
+        unsafe { Self(RDKit_JSONToMol(s.as_ptr())) }
+    }
+
+    /// Convert the molecule to RDKit's extension to the commonchem JSON format.
+    pub fn to_json(&self) -> String {
+        unsafe {
+            let json = RDKit_MolToJSON(self.0);
+            let s = CStr::from_ptr(json);
+            s.to_str().unwrap().to_owned()
+        }
     }
 
     pub fn to_smiles(&self) -> String {
@@ -501,6 +518,8 @@ pub mod fingerprint {
 
 #[cfg(test)]
 mod tests {
+    use std::fs::read_to_string;
+
     use super::*;
 
     #[test]
@@ -509,5 +528,22 @@ mod tests {
         let got = benzene.to_inchi_key();
         let want = "UHOVQNZJYSORNB-UHFFFAOYSA-N";
         assert_eq!(got, want);
+    }
+
+    #[test]
+    fn rdkit_json() {
+        let s = read_to_string("testfiles/rdkit.json").unwrap();
+        let mol = ROMol::from_json(&s);
+        let got = mol.to_json();
+        assert_eq!(got, s.trim());
+    }
+
+    #[test]
+    fn commonchem_json() {
+        let s = read_to_string("testfiles/commonchem.json").unwrap();
+        let mol = ROMol::from_json(&s);
+        let got = mol.to_json();
+        let want = read_to_string("testfiles/rdkit.json").unwrap();
+        assert_eq!(got, want.trim());
     }
 }
