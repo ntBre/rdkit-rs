@@ -3,7 +3,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::RDError;
+use crate::{RDError, ROMol};
 
 #[derive(Serialize, Deserialize)]
 struct RDKitJSON {
@@ -55,9 +55,14 @@ struct Extension {
     name: String,
     format_version: usize,
     toolkit_version: String,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     aromatic_atoms: Vec<usize>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     aromatic_bonds: Vec<usize>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     atom_rings: Vec<Vec<usize>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    cip_ranks: Vec<usize>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -85,16 +90,34 @@ impl RSMol {
     }
 }
 
+impl From<ROMol> for RSMol {
+    fn from(value: ROMol) -> Self {
+        let json = value.to_json();
+        Self::from_json(&json).unwrap()
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use std::fs::read_to_string;
+    use std::{fs::read_to_string, path::PathBuf};
 
     use super::*;
 
     #[test]
     fn test_from_json() {
-        let s = read_to_string("testfiles/rdkit.json").unwrap();
-        let got = RSMol::from_json(&s).unwrap().to_json();
-        assert_eq!(got, s.trim());
+        let dir = PathBuf::from("testfiles");
+        for file in ["rdkit", "romol"] {
+            eprintln!("testing {file}.json");
+            let f = dir.join(file).with_extension("json");
+            let s = read_to_string(f).unwrap();
+            let got = RSMol::from_json(&s).unwrap().to_json();
+            assert_eq!(got, s.trim(), "got = {got}, want = {}", s.trim());
+        }
+    }
+
+    #[test]
+    fn test_from_romol() {
+        let mol = ROMol::from_smiles("CCO");
+        let _ = RSMol::from(mol);
     }
 }
