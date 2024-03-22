@@ -12,22 +12,13 @@ use rdkit_sys::{
 
 use self::bitvector::BitVector;
 
+pub mod errors;
 pub mod fingerprint;
 pub mod fragment;
 pub mod mol_supplier;
 
+pub use errors::RDError;
 pub use mol_supplier::SDMolSupplier;
-
-#[derive(Debug)]
-pub struct RDError;
-
-impl Display for RDError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "RDError: see stderr for exception info")
-    }
-}
-
-impl std::error::Error for RDError {}
 
 pub mod bitvector {
     use std::ops::Index;
