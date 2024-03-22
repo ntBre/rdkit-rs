@@ -54,19 +54,3 @@ jobs:
       # https://twitter.com/jonhoo/status/1571290371124260865
       - name: cargo test --locked
         run: RDROOT=/opt/rdkit cargo test --locked --all-features --all-targets
-
-  mac:
-    runs-on: macos-latest
-    name: macos
-    container:
-      image: ntbre/rdkit-rs
-      volumes:
-        - rdkit-rs:/source
-      env:
-        RDROOT: /opt/rdkit
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: cargo test
-        run: (cd /source && cargo test --locked --all-features --all-targets)
