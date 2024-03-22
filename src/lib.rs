@@ -12,6 +12,9 @@ use rdkit_sys::{
 
 use self::bitvector::BitVector;
 
+#[cfg(test)]
+mod tests;
+
 pub mod bitvector;
 pub mod errors;
 pub mod fingerprint;
@@ -305,32 +308,5 @@ pub fn find_smarts_matches_mol(mol: &ROMol, smarts: &ROMol) -> Vec<Vec<usize>> {
             ret.push(mat.iter().map(|&x| x as usize).collect());
         }
         ret
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use std::fs::read_to_string;
-
-    use super::*;
-
-    #[test]
-    fn to_inchi_key() {
-        let benzene = ROMol::from_smiles("C1=CC=CC=C1");
-        let got = benzene.to_inchi_key();
-        let want = "UHOVQNZJYSORNB-UHFFFAOYSA-N";
-        assert_eq!(got, want);
-    }
-
-    #[test]
-    fn rdkit_json() {
-        let s = read_to_string("testfiles/rdkit.json").unwrap();
-        ROMol::from_json(&s);
-    }
-
-    #[test]
-    fn commonchem_json() {
-        let s = read_to_string("testfiles/commonchem.json").unwrap();
-        ROMol::from_json(&s);
     }
 }
