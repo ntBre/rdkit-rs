@@ -7,47 +7,16 @@ use std::{
 use bitflags::bitflags;
 use rdkit_sys::{
     RDKit_JSONToMol, RDKit_MolToJSON, RDKit_MolToSmiles, RDKit_ROMol,
-    RDKit_ROMol_delete, RDKit_SDMolSupplier, RDKit_SmartsToMol,
-    RDKit_SmilesToMol, RDKit_create_mol_supplier, RDKit_delete_mol_supplier,
-    RDKit_mol_supplier_at_end, RDKit_mol_supplier_next,
+    RDKit_ROMol_delete, RDKit_SmartsToMol, RDKit_SmilesToMol,
 };
 
 use self::bitvector::BitVector;
 
 pub mod fingerprint;
 pub mod fragment;
+pub mod mol_supplier;
 
-pub struct SDMolSupplier(*mut RDKit_SDMolSupplier);
-
-unsafe impl Send for SDMolSupplier {}
-
-impl SDMolSupplier {
-    /// construct an [SDMolSupplier] from a filepath that can be converted to a
-    /// CString. panics if this conversion fails.
-    pub fn new(path: impl Into<Vec<u8>>) -> Result<Self, RDError> {
-        let cpath = CString::new(path).expect("failed to create CString");
-        unsafe {
-            let inner = RDKit_create_mol_supplier(cpath.as_ptr(), true);
-            if inner.is_null() {
-                return Err(RDError);
-            }
-            Ok(Self(inner))
-        }
-    }
-
-    /// reports whether or not `self` is at the end of the underlying file
-    pub fn at_end(&self) -> bool {
-        unsafe { RDKit_mol_supplier_at_end(self.0) }
-    }
-}
-
-impl Drop for SDMolSupplier {
-    fn drop(&mut self) {
-        unsafe {
-            RDKit_delete_mol_supplier(self.0);
-        }
-    }
-}
+pub use mol_supplier::SDMolSupplier;
 
 #[derive(Debug)]
 pub struct RDError;
@@ -59,73 +28,6 @@ impl Display for RDError {
 }
 
 impl std::error::Error for RDError {}
-
-impl Iterator for SDMolSupplier {
-    type Item = Result<ROMol, RDError>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.at_end() {
-            return None;
-        }
-        unsafe {
-            let mol = RDKit_mol_supplier_next(self.0);
-            if mol.is_null() {
-                return Some(Err(RDError));
-            }
-            Some(Ok(ROMol(mol)))
-        }
-    }
-}
-
-/// WARNING: use this at your own risk. I don't think I did anything wrong in
-/// the C++ wrapper, and it's using the default of 2 writer threads, but I've
-/// gotten segfaults reading the ChEMBL 33 SDF. RDKit should have been built
-/// with the default RDK_BUILD_THREADSAFE_SSS=ON, so defining that macro in the
-/// wrapper should be safe
-pub struct MultithreadedSDMolSupplier(
-    *mut rdkit_sys::RDKit_MultithreadedSDMolSupplier,
-);
-
-unsafe impl Send for MultithreadedSDMolSupplier {}
-
-impl MultithreadedSDMolSupplier {
-    /// construct an [MultithreadedSDMolSupplier] from a filepath that can be
-    /// converted to a CString. panics if this conversion fails
-    pub fn new(path: impl Into<Vec<u8>>) -> Self {
-        let cpath = CString::new(path).expect("failed to create CString");
-        unsafe {
-            let inner =
-                rdkit_sys::RDKit_MultithreadedSDMolSupplier_new(cpath.as_ptr());
-            Self(inner)
-        }
-    }
-
-    /// reports whether or not `self` is at the end of the underlying file
-    pub fn at_end(&self) -> bool {
-        unsafe { rdkit_sys::RDKit_MultithreadedSDMolSupplier_at_end(self.0) }
-    }
-}
-
-impl Drop for MultithreadedSDMolSupplier {
-    fn drop(&mut self) {
-        unsafe {
-            rdkit_sys::RDKit_MultithreadedSDMolSupplier_delete(self.0);
-        }
-    }
-}
-
-impl Iterator for MultithreadedSDMolSupplier {
-    type Item = ROMol;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.at_end() {
-            return None;
-        }
-        Some(unsafe {
-            ROMol(rdkit_sys::RDKit_MultithreadedSDMolSupplier_next(self.0))
-        })
-    }
-}
 
 pub mod bitvector {
     use std::ops::Index;
