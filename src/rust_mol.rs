@@ -92,8 +92,13 @@ impl RSMol {
 
 impl From<ROMol> for RSMol {
     fn from(value: ROMol) -> Self {
-        let json = value.to_json();
-        Self::from_json(&json).unwrap()
+        Self::from_json(&value.to_json()).unwrap()
+    }
+}
+
+impl From<RSMol> for ROMol {
+    fn from(value: RSMol) -> Self {
+        Self::from_json(&value.to_json())
     }
 }
 
@@ -119,5 +124,12 @@ mod tests {
     fn test_from_romol() {
         let mol = ROMol::from_smiles("CCO");
         let _ = RSMol::from(mol);
+    }
+
+    #[test]
+    fn test_into_romol() {
+        let s = read_to_string("testfiles/rdkit.json").unwrap();
+        let mol = RSMol::from_json(&s).unwrap();
+        let _ = ROMol::from(mol);
     }
 }
