@@ -222,7 +222,7 @@ dependencies = [
 [[package]]
 name = "rdkit-sys"
 version = "0.1.0"
-source = "git+https://github.com/ntBre/rdkit-sys#7d0afd829ad352c16f3032c7af3dc0493fcdc9f8"
+source = "git+https://github.com/ntBre/rdkit-sys#fb9e645985e92d8e0a436fc0c239bbf786235cfa"
 dependencies = [
  "bindgen",
 ]
