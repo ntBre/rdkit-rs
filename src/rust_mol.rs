@@ -5,12 +5,12 @@ use serde::{Deserialize, Serialize};
 
 use crate::{RDError, ROMol};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct RDKitJSON {
     version: usize,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct AtomDefaults {
     z: usize,
     #[serde(rename = "impHs")]
@@ -22,19 +22,19 @@ struct AtomDefaults {
     stereo: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct BondDefaults {
     bo: usize,
     stereo: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Defaults {
     atom: AtomDefaults,
     bond: BondDefaults,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Atom {
     #[serde(skip_serializing_if = "Option::is_none")]
     z: Option<usize>,
@@ -42,14 +42,14 @@ struct Atom {
     imp_hs: Option<usize>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Bond {
     #[serde(skip_serializing_if = "Option::is_none")]
     bo: Option<usize>,
     atoms: Vec<usize>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Extension {
     name: String,
@@ -65,14 +65,14 @@ struct Extension {
     cip_ranks: Vec<usize>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Molecule {
     atoms: Vec<Atom>,
     bonds: Vec<Bond>,
     extensions: Vec<Extension>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct RSMol {
     rdkitjson: RDKitJSON,
@@ -86,6 +86,10 @@ impl RSMol {
     }
 
     pub fn to_json(&self) -> String {
+        serde_json::to_string(self).unwrap()
+    }
+
+    pub fn to_json_pretty(&self) -> String {
         serde_json::to_string_pretty(self).unwrap()
     }
 }
@@ -115,7 +119,7 @@ mod tests {
             eprintln!("testing {file}.json");
             let f = dir.join(file).with_extension("json");
             let s = read_to_string(f).unwrap();
-            let got = RSMol::from_json(&s).unwrap().to_json();
+            let got = RSMol::from_json(&s).unwrap().to_json_pretty();
             assert_eq!(got, s.trim(), "got = {got}, want = {}", s.trim());
         }
     }
