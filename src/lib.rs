@@ -107,6 +107,15 @@ impl ROMol {
         unsafe { rdkit_sys::RDKit_ROMol_getNumAtoms(self.0) as usize }
     }
 
+    pub fn elements(&self) -> Vec<usize> {
+        unsafe {
+            let mut natoms = 0;
+            let ptr = rdkit_sys::RDKit_ROMol_getElements(self.0, &mut natoms);
+            let ret = Vec::from_raw_parts(ptr, natoms, natoms);
+            ret.into_iter().map(|i| i as usize).collect()
+        }
+    }
+
     pub fn sanitize(&mut self, ops: SanitizeFlags) {
         unsafe {
             let status = rdkit_sys::RDKit_SanitizeMol(self.0, ops.bits());

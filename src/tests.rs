@@ -21,3 +21,11 @@ fn commonchem_json() {
     let s = read_to_string("testfiles/commonchem.json").unwrap();
     ROMol::from_json(&s);
 }
+
+#[test]
+fn elements() {
+    let mol = ROMol::from_smiles("CCO");
+    let got = mol.elements();
+    let want = [6, 6, 8];
+    assert_eq!(got, want);
+}
