@@ -94,9 +94,9 @@ jobs:
         run: |
           sudo mkdir -p /opt
           sudo cp -r rdkit /opt/.
-      # - name: cargo generate-lockfile
-      #   if: hashFiles('Cargo.lock') == ''
-      #   run: cargo generate-lockfile
-      # # https://twitter.com/jonhoo/status/1571290371124260865
-      # - name: cargo test --locked
-      #   run: LDFLAGS='-undefined dynamic_lookup' CXX='clang++ -v' RDROOT=/opt/rdkit cargo test --locked --all-features --all-targets
+      - name: cargo generate-lockfile
+        if: hashFiles('Cargo.lock') == ''
+        run: cargo generate-lockfile
+      # https://twitter.com/jonhoo/status/1571290371124260865
+      - name: cargo test --locked
+        run: LDFLAGS='-undefined dynamic_lookup' CXX='clang++ -v' RDROOT=/opt/rdkit cargo test --locked --all-features --all-targets
