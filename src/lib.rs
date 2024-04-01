@@ -24,6 +24,7 @@ pub mod rust_mol;
 
 pub use errors::RDError;
 pub use mol_supplier::SDMolSupplier;
+pub use rdkit_sys::Point3D;
 
 pub struct SmilesParserParams {
     /// defaults to true
@@ -42,6 +43,27 @@ impl Default for SmilesParserParams {
 }
 
 pub struct ROMol(*mut RDKit_ROMol);
+
+pub struct Conformer(*mut rdkit_sys::RDKit_Conformer);
+
+impl Drop for Conformer {
+    fn drop(&mut self) {
+        unsafe {
+            rdkit_sys::RDKit_Conformer_delete(self.0);
+        }
+    }
+}
+
+impl Conformer {
+    pub fn get_positions(&self) -> Vec<Point3D> {
+        unsafe {
+            let mut n = 0;
+            let ps = rdkit_sys::RDKit_Conformer_getPositions(self.0, &mut n);
+            assert!(!ps.is_null());
+            Vec::from_raw_parts(ps, n as usize, n as usize)
+        }
+    }
+}
 
 impl Display for ROMol {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -230,6 +252,22 @@ impl ROMol {
             }
             ret
         }
+    }
+
+    pub fn compute_2d_coords(&self) -> usize {
+        unsafe { rdkit_sys::RDKit_compute2DCoords(self.0) as usize }
+    }
+
+    pub fn get_conformer(&self, id: usize) -> Conformer {
+        unsafe {
+            Conformer(rdkit_sys::RDKit_ROMol_getConformer(self.0, id as c_int))
+        }
+    }
+
+    /// Call the sequence of operations to generate and return a vector of 2D
+    /// coordinates
+    pub fn get_2d_coords(&self) -> Vec<Point3D> {
+        self.get_conformer(self.compute_2d_coords()).get_positions()
     }
 }
 

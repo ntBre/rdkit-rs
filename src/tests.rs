@@ -29,3 +29,10 @@ fn elements() {
     let want = [6, 6, 8];
     assert_eq!(got, want);
 }
+
+#[test]
+fn get_2d_coords() {
+    let mol = ROMol::from_smiles("CCO");
+    let coords = mol.get_2d_coords();
+    assert_eq!(coords.len(), 3);
+}
