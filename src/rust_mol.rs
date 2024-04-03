@@ -1,5 +1,5 @@
-//! Experimental module for a Rust version of [ROMol][crate::ROMol] constructed
-//! using serde and [ROMol::to_json][crate::ROMol::to_json].
+//! Experimental module for a Rust version of [ROMol] constructed using serde
+//! and [ROMol::to_json][crate::ROMol::to_json].
 
 use serde::{Deserialize, Serialize};
 
