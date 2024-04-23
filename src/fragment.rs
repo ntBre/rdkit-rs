@@ -144,87 +144,83 @@ pub fn recap_decompose(
             let ps =
                 reaction.run_reactants(node.borrow().mol.as_ref().unwrap());
 
-            // TODO maybe not is empty?
-            if !ps.is_empty() {
-                for prod_seq in ps {
-                    let mut seq_ok = true;
-                    // disqualify small fragments by sorting by size and
-                    // look for "forbidden fragments"
-                    let mut tseq: Vec<_> = prod_seq
-                        .iter()
-                        .enumerate()
-                        // NOTE num_atoms might need onlyExplicit=True here
-                        .map(|(idx, prod)| (prod.mol.num_atoms(), idx))
-                        .collect();
-                    tseq.sort();
-                    // we can't move out of prod_seq itself, so turn it into
-                    // a map of idx -> mol and the .remove on that
-                    let mut prod_seq: HashMap<_, _> =
-                        prod_seq.into_iter().enumerate().collect();
-                    let ts: Vec<_> = tseq
-                        .iter()
-                        .map(|(x, y)| (x, prod_seq.remove(y).unwrap()))
-                        .collect();
-                    let mut prod_seq = ts;
-                    for (nats, prod) in prod_seq.iter_mut() {
-                        // default again
-                        prod.mol.sanitize(super::SanitizeFlags::ALL);
-                        // NOTE passing 1 again
-                        let psmi = prod.mol.to_smiles();
+            for prod_seq in ps {
+                let mut seq_ok = true;
+                // disqualify small fragments by sorting by size and
+                // look for "forbidden fragments"
+                let mut tseq: Vec<_> = prod_seq
+                    .iter()
+                    .enumerate()
+                    // NOTE num_atoms might need onlyExplicit=True here
+                    .map(|(idx, prod)| (prod.mol.num_atoms(), idx))
+                    .collect();
+                tseq.sort();
+                // we can't move out of prod_seq itself, so turn it into
+                // a map of idx -> mol and the .remove on that
+                let mut prod_seq: HashMap<_, _> =
+                    prod_seq.into_iter().enumerate().collect();
+                let ts: Vec<_> = tseq
+                    .iter()
+                    .map(|(x, y)| (x, prod_seq.remove(y).unwrap()))
+                    .collect();
+                let mut prod_seq = ts;
+                for (nats, prod) in prod_seq.iter_mut() {
+                    // default again
+                    prod.mol.sanitize(super::SanitizeFlags::ALL);
+                    // NOTE passing 1 again
+                    let psmi = prod.mol.to_smiles();
 
-                        // TODO default arg I think
-                        if min_fragment_size > 0 {
-                            let ndummies =
-                                psmi.chars().filter(|&c| c == '*').count();
-                            if *nats - ndummies < min_fragment_size {
-                                seq_ok = false;
-                                break;
-                            }
-                        } else if ["", "C", "CC", "CCC"].contains(
-                            &psmi.replace('*', "").replace("()", "").as_str(),
-                        ) {
-                            // remove empty branches after replacing dummy
-                            // atoms
+                    // TODO default arg I think
+                    if min_fragment_size > 0 {
+                        let ndummies =
+                            psmi.chars().filter(|&c| c == '*').count();
+                        if *nats - ndummies < min_fragment_size {
                             seq_ok = false;
                             break;
                         }
-                        prod.psmi = psmi;
+                    } else if ["", "C", "CC", "CCC"].contains(
+                        &psmi.replace('*', "").replace("()", "").as_str(),
+                    ) {
+                        // remove empty branches after replacing dummy
+                        // atoms
+                        seq_ok = false;
+                        break;
                     }
-                    if seq_ok {
-                        for (_nats, prod) in prod_seq {
-                            let psmi = prod.psmi;
-                            let entry = all_nodes.entry(psmi.clone());
-                            match entry {
-                                Entry::Occupied(occ) => {
-                                    let pnode = occ.get();
-                                    pnode
-                                        .borrow_mut()
-                                        .parents
-                                        .insert(nsmi.clone(), node.clone());
-                                    node.borrow_mut()
-                                        .children
-                                        .insert(psmi, pnode.clone());
-                                }
-                                Entry::Vacant(v) => {
-                                    let mut pnode = RecapHierarchyNode::new(
-                                        Rc::new(prod.mol),
-                                    );
-                                    pnode.smiles = Some(psmi.clone());
-                                    // cycle, horrifying
-                                    pnode
-                                        .parents
-                                        .insert(nsmi.clone(), node.clone());
-                                    let pnode = Rc::new(RefCell::new(pnode));
-                                    node.borrow_mut()
-                                        .children
-                                        .insert(psmi.clone(), pnode.clone());
-                                    if !seen.contains(&psmi) {
-                                        seen.insert(psmi.clone());
-                                        active_pool.insert(psmi, pnode.clone());
-                                        v.insert(pnode);
-                                    } else {
-                                        debug!("skipping already seen {psmi}");
-                                    }
+                    prod.psmi = psmi;
+                }
+                if seq_ok {
+                    for (_nats, prod) in prod_seq {
+                        let psmi = prod.psmi;
+                        let entry = all_nodes.entry(psmi.clone());
+                        match entry {
+                            Entry::Occupied(occ) => {
+                                let pnode = occ.get();
+                                pnode
+                                    .borrow_mut()
+                                    .parents
+                                    .insert(nsmi.clone(), node.clone());
+                                node.borrow_mut()
+                                    .children
+                                    .insert(psmi, pnode.clone());
+                            }
+                            Entry::Vacant(v) => {
+                                let mut pnode =
+                                    RecapHierarchyNode::new(Rc::new(prod.mol));
+                                pnode.smiles = Some(psmi.clone());
+                                // cycle, horrifying
+                                pnode
+                                    .parents
+                                    .insert(nsmi.clone(), node.clone());
+                                let pnode = Rc::new(RefCell::new(pnode));
+                                node.borrow_mut()
+                                    .children
+                                    .insert(psmi.clone(), pnode.clone());
+                                if !seen.contains(&psmi) {
+                                    seen.insert(psmi.clone());
+                                    active_pool.insert(psmi, pnode.clone());
+                                    v.insert(pnode);
+                                } else {
+                                    debug!("skipping already seen {psmi}");
                                 }
                             }
                         }
