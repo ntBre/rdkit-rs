@@ -35,6 +35,7 @@ jobs:
             rdkit/Code
             rdkit/External
           key: ${{ runner.os }}-build-rdkit
+          save-always: true
       - name: install rdkit
         if: steps.cache-rdkit.outputs.cache-hit != 'true'
         run: |
@@ -81,6 +82,7 @@ jobs:
             rdkit/Code
             rdkit/External
           key: ${{ runner.os }}-build-rdkit
+          save-always: true
       - name: install rdkit
         if: steps.cache-rdkit.outputs.cache-hit != 'true'
         run: |
@@ -127,6 +129,7 @@ jobs:
             rdkit/Code
             rdkit/External
           key: ${{ runner.os }}-build-rdkit
+          save-always: true
       - name: install rdkit
         if: steps.cache-rdkit.outputs.cache-hit != 'true'
         run: |
