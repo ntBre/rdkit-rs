@@ -71,7 +71,7 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
       - name: install dependencies
         run: |
-          brew install boost eigen numpy
+          brew install boost@1.76 eigen numpy
       - name: cache rdkit
         id: cache-rdkit
         uses: actions/cache@v4
@@ -117,7 +117,7 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
       - name: install dependencies
         run: |
-          brew install boost eigen numpy
+          brew install boost@1.76 eigen numpy
       - name: cache rdkit
         id: cache-rdkit
         uses: actions/cache@v4
