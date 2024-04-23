@@ -138,6 +138,12 @@ pub fn recap_decompose(
                 }
             }
 
+            // NOTE caching does NOT work here because run_reactants actually
+            // mutates the molecule through a raw pointer into C++. the
+            // underlying *mut ROMol is passed to an rdkit-sys function, so
+            // trying to return ps from a HashMap keyed by mol.to_smiles was
+            // producing the wrong answer
+
             // TODO see GraphMol/ChemReactions/Reaction.h
             let ps =
                 reaction.run_reactants(node.borrow().mol.as_ref().unwrap());
