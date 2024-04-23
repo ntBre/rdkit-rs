@@ -184,11 +184,11 @@ pub fn recap_decompose(
                         seq_ok = false;
                         break;
                     }
-                    prod.psmi = psmi;
+                    prod.psmi = Some(psmi);
                 }
                 if seq_ok {
                     for (_nats, prod) in prod_seq {
-                        let psmi = prod.psmi;
+                        let psmi = prod.psmi.unwrap();
                         let entry = all_nodes.entry(psmi.clone());
                         match entry {
                             Entry::Occupied(occ) => {
@@ -237,7 +237,7 @@ unsafe impl Sync for ChemicalReaction {}
 
 struct Product {
     mol: ROMol,
-    psmi: String,
+    psmi: Option<String>,
 }
 
 impl ChemicalReaction {
@@ -269,10 +269,7 @@ impl ChemicalReaction {
                 let mut row = Vec::new();
                 for _ in 0..inner {
                     let mol = ROMol(mols[idx]);
-                    row.push(Product {
-                        psmi: mol.to_smiles(),
-                        mol,
-                    });
+                    row.push(Product { psmi: None, mol });
                     idx += 1;
                 }
                 ret.push(row);
