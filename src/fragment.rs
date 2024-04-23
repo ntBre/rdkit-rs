@@ -1,5 +1,3 @@
-#![allow(unused)]
-
 use std::{
     cell::RefCell,
     collections::{hash_map::Entry, HashMap, HashSet},
@@ -32,7 +30,7 @@ const REACTION_DEFS: [&str; 12] = [
 ];
 
 static REACTIONS: LazyLock<[ChemicalReaction; 12]> =
-    LazyLock::new(|| REACTION_DEFS.map(|r| ChemicalReaction::from_smarts(r)));
+    LazyLock::new(|| REACTION_DEFS.map(ChemicalReaction::from_smarts));
 
 type Node = Rc<RefCell<RecapHierarchyNode>>;
 
