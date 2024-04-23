@@ -6,6 +6,7 @@ use std::{
     ffi::CString,
     ptr::null_mut,
     rc::Rc,
+    sync::LazyLock,
 };
 
 use log::debug;
@@ -29,6 +30,9 @@ const REACTION_DEFS: [&str; 12] = [
     "[n;+0:1]-!@[c:2]>>[n:1]*.*[c:2]",
     "[#7;+0;D2,D3:1]-!@[S:2](=[O:3])=[O:4]>>[#7:1]*.*[S:2](=[O:3])=[O:4]", // sulphonamide
 ];
+
+static REACTIONS: LazyLock<[ChemicalReaction; 12]> =
+    LazyLock::new(|| REACTION_DEFS.map(|r| ChemicalReaction::from_smarts(r)));
 
 type Node = Rc<RefCell<RecapHierarchyNode>>;
 
@@ -89,12 +93,6 @@ pub fn recap_decompose(
     min_fragment_size: Option<usize>,
     only_use_reactions: Option<HashSet<usize>>,
 ) -> RecapResult {
-    // TODO make this lazy static
-    let reactions: Vec<_> = REACTION_DEFS
-        .iter()
-        .map(|x| ChemicalReaction::from_smarts(x))
-        .collect();
-
     // TODO passes 1 as arg, I think that's a bool asking for isomeric
     // smiles
     let msmi = mol.to_smiles();
@@ -134,7 +132,7 @@ pub fn recap_decompose(
             continue;
         }
 
-        for (rxn_idx, reaction) in reactions.iter().enumerate() {
+        for (rxn_idx, reaction) in REACTIONS.iter().enumerate() {
             // TODO another default None arg
             if let Some(only_use_reactions) = &only_use_reactions {
                 if !only_use_reactions.contains(&rxn_idx) {
@@ -239,6 +237,9 @@ pub fn recap_decompose(
 }
 
 struct ChemicalReaction(*mut rdkit_sys::RDKit_ChemicalReaction);
+
+unsafe impl Send for ChemicalReaction {}
+unsafe impl Sync for ChemicalReaction {}
 
 struct Product {
     mol: ROMol,
