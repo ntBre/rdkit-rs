@@ -19,3 +19,6 @@ FROM base
 COPY --from=build-rdkit /opt/rdkit /opt/rdkit/
 RUN pacman -Syu --noconfirm rustup
 RUN rustup toolchain install nightly
+
+# Set the entry point to the Rust application
+CMD ["/app/target/release/rdkit-rs"]
