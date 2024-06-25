@@ -9,4 +9,4 @@ bitflags = "2.5.0"
 log = "0.4.20"
 rdkit-sys = { git = "https://github.com/ntBre/rdkit-sys" }
 serde = { version = "1.0.203", features = ["derive"] }
-serde_json = "1.0.117"
+serde_json = "1.0.118"
