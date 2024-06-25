@@ -5,7 +5,7 @@ edition = "2021"
 links = "shim2"
 
 [dependencies]
-bitflags = "2.5.0"
+bitflags = "2.6.0"
 log = "0.4.20"
 rdkit-sys = { git = "https://github.com/ntBre/rdkit-sys" }
 serde = { version = "1.0.203", features = ["derive"] }
