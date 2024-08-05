@@ -37,10 +37,7 @@ pub struct SmilesParserParams {
 
 impl Default for SmilesParserParams {
     fn default() -> Self {
-        Self {
-            remove_hs: true,
-            sanitize: true,
-        }
+        Self { remove_hs: true, sanitize: true }
     }
 }
 
