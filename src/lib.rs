@@ -1,5 +1,3 @@
-#![feature(lazy_cell)]
-
 use std::{
     collections::HashMap,
     ffi::{c_int, c_uint, CStr, CString},
